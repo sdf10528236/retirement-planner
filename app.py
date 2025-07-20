@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.title("退休資產需求推估（含資產變化模擬）")
+st.title("退休資產需求推估")
 
 # 投資標的資料
 portfolio_data = {
