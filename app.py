@@ -7,7 +7,9 @@ st.title("退休資產需求推估")
 # 投資標的資料
 portfolio_data = {
     "60/40 股債配": {"mean_return": 6.0, "std_dev": 8.5},
-    "VT (全市場 ETF)": {"mean_return": 8.05, "std_dev": 15.76}
+    "VT (全市場 ETF)": {"mean_return": 8.05, "std_dev": 15.76},
+    "0050 (台灣50)": {"mean_return": 8.5, "std_dev": 15.5},
+    "0056 (高股息)": {"mean_return": 7.5, "std_dev": 12.5},
 }
 
 #提領策略
