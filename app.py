@@ -111,7 +111,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
             "75%": [st.session_state["retire_result_asset"]]
         }, index=[0])
         df = pd.concat([initial_row, df])
-        st.subheader("模擬資產走勢（含 25%、中位數、75%）")
+        st.subheader("退休後資產走勢（含 25%、中位數、75%）")
         st.line_chart(df)
 
 st.markdown("---")
