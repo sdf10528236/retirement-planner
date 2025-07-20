@@ -23,9 +23,9 @@ with st.expander("退休後資產需求模擬", expanded=True):
     portfolio = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio")
     mean_return = portfolio_data[portfolio]["mean_return"]
     std_dev = portfolio_data[portfolio]["std_dev"]
-    mean_return = st.slider("年平均報酬率（%）", 0.0, 15.0, mean_return, key="mean_return")
-    std_dev = st.slider("年報酬率波動度（標準差%）", 0.0, 30.0, std_dev, key="std_dev")
-    inflation = st.slider("年通膨率（%）", 0.0, 10.0, 2.0, key="inflation")
+    mean_return = st.number_input("年平均報酬率（%）", min_value=0.0, max_value=15.0, value=mean_return, key="mean_return")
+    std_dev = st.number_input("年報酬率波動度（標準差%）", min_value=0.0, max_value=30.0, value=std_dev, key="std_dev")
+    inflation = st.number_input("年通膨率（%）", min_value=0.0, max_value=10.0, value=2.0, key="inflation")
     simulations = st.number_input("模擬次數 (最多2000)", min_value=1, max_value=2000, value=1000, key="simulations")
     withdraw_strategy = st.selectbox("提領策略 (提領策略會影響退休所需金額)", options=list(strategy_data.keys()))
     target_success_rate = st.slider("目標成功率(%)", 50, 100, 95, key="target_success_rate") / 100
