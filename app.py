@@ -6,16 +6,16 @@ st.title("退休資產需求推估")
 
 # 投資標的資料
 portfolio_data = {
-    "60/40 股債配": {"mean_return": 6.0, "std_dev": 8.5},
     "VT (全市場 ETF)": {"mean_return": 8.05, "std_dev": 15.76},
     "0050 (台灣50)": {"mean_return": 8.5, "std_dev": 15.5},
+    "60/40 股債配": {"mean_return": 6.0, "std_dev": 8.5},
     "0056 (高股息)": {"mean_return": 7.5, "std_dev": 12.5},
 }
 
 #提領策略
 strategy_data = {
+    "GK動態提領": {"value": "GK"},
     "每年固定提領": {"value": "fix"},
-    "GK動態提領": {"value": "GK"}
 }
 
 # 退休後模擬輸入
@@ -44,7 +44,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
             annual_expense=base_annual_expense
 
             for year, r in enumerate(returns):
-                real_return = (1 + r) / (1 + inflation/100) - 1
+                real_return = (1 + r)  - 1
                 last_asset=asset
 
                 if strategy_data[withdraw_strategy]["value"] == "fix":
@@ -163,3 +163,114 @@ with st.expander("定期定額達標所需時間估算", expanded=True):
             })
             st.subheader("達成退休金前的資產累積走勢")
             st.line_chart(df_growth.set_index("年數"))
+
+
+#### 提領模擬預估
+
+st.title("退休資產需求推估")
+# ================================
+# 📌 提領模擬預估
+# ================================
+with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
+    initial_assets = st.number_input("初始資產（萬元）", min_value=100, value=1200, step=100)
+    withdraw_rate = st.number_input("提領率 (%)", min_value=1.0,value=4.0) / 100
+    #
+    portfolio2 = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio2")
+    mean_return2 = portfolio_data[portfolio2]["mean_return"]
+    std_dev2 = portfolio_data[portfolio2]["std_dev"]
+    expected_return = st.slider("年平均報酬率（%）", 0.0, 15.0, mean_return2, key="mean_return2") / 100
+    return_std = st.slider("年報酬率波動度（標準差%）", 0.0, 30.0, std_dev2, key="std_dev2")/100
+    #
+    inflation = st.number_input("年通膨率 (%)", min_value=0.0, value=2.0) / 100
+    years = st.number_input("退休後年數", min_value=1, max_value=60, value=35)
+    simulations = st.number_input("模擬次數", min_value=100, max_value=20000, value=5000)
+    withdraw_strategy = st.selectbox("提領策略", options=list(strategy_data.keys()))
+
+    if st.button("開始模擬", key="withdraw_sim"):
+        all_trajectories = []
+        ending_years = []
+        success_count = 0
+        final_assets = []
+        avg_withdrawals = []
+
+        for _ in range(simulations):
+            assets = initial_assets
+            withdrawal = initial_assets * withdraw_rate
+            trajectory = [initial_assets]
+            total_withdrawn = 0
+            withdraw_count = 0
+            base_withdraw_rate = withdraw_rate
+
+            for year in range(years):
+                withdraw_count += 1
+                total_withdrawn += withdrawal
+
+                # 投資報酬
+                annual_return = np.random.normal(expected_return, return_std)
+                real_return = (1 + annual_return) - 1
+                last_assets = assets
+                assets = assets * (1 + real_return)
+
+                if strategy_data[withdraw_strategy]["value"] == "fix":
+                    withdrawal *= (1 + inflation)
+                elif strategy_data[withdraw_strategy]["value"] == "GK":
+                    if assets > last_assets:  # 市場上漲
+                        if year != 0:
+                            withdrawal *= (1 + inflation)
+                        if ((withdrawal / assets) - base_withdraw_rate) < base_withdraw_rate * (-0.2):
+                            withdrawal *= 1.1
+                    else:  # 市場下跌
+                        if ((withdrawal / assets) - base_withdraw_rate) > base_withdraw_rate * 0.2:
+                            withdrawal *= 0.9
+
+                assets -= withdrawal
+                trajectory.append(max(assets, 0))
+
+                if assets <= 0:
+                    ending_years.append(year + 1)
+                    break
+            else:
+                ending_years.append(years)
+                success_count += 1
+
+            all_trajectories.append(trajectory)
+            if withdraw_count > 0:
+                avg_withdrawals.append(total_withdrawn / withdraw_count)
+
+            final_assets.append(max(trajectory[-1], 0))
+
+        success_rate = success_count / simulations * 100
+        avg_years = np.mean(ending_years)
+        max_asset = np.max(final_assets)
+        min_asset = np.min(final_assets)
+        avg_asset = np.mean(final_assets)
+        median_asset = np.median(final_assets)
+
+        st.success(f"✅ 成功率：{success_rate:.1f}%")
+        st.write(f"📉 平均可撐年數：{avg_years:.1f} 年")
+        st.write(f"💰 每年平均提領金額：約 {np.mean(avg_withdrawals):,.0f} 萬元")
+        st.write(f"🏦 最大期末資產：約 {max_asset:,.0f} 萬元")
+        st.write(f"🏦 最小期末資產：約 {min_asset:,.0f} 萬元")
+        st.write(f"🏦 平均期末資產：約 {avg_asset:,.0f} 萬元")
+        st.write(f"🏦 中位期末資產：約 {median_asset:,.0f} 萬元")
+
+        # 📊 畫走勢圖
+        fig, ax = plt.subplots(figsize=(10, 5))
+        for traj in all_trajectories[:200]:  # 只畫前200條避免太亂
+            ax.plot(traj, color="blue", alpha=0.2)
+        ax.set_title(f"退休資產走勢模擬\n成功率={success_rate:.1f}%, 平均存活={avg_years:.1f}年")
+        ax.set_xlabel("年數")
+        ax.set_ylabel("資產 (萬元)")
+        ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=False))
+        ax.ticklabel_format(style="plain", axis="y")
+        ax.grid(True, alpha=0.3)
+        st.pyplot(fig)
+
+        # 📊 畫期末資產分布
+        fig2, ax2 = plt.subplots(figsize=(8, 5))
+        ax2.hist(final_assets, bins=50, color="skyblue", edgecolor="black", alpha=0.7)
+        ax2.set_title("期末資產分布")
+        ax2.set_xlabel("期末資產 (萬元)")
+        ax2.set_ylabel("次數")
+        ax2.ticklabel_format(style="plain", axis="x")
+        st.pyplot(fig2)
