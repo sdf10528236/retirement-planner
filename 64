@@ -1,0 +1,33 @@
+Ignoring numpy: markers 'python_version >= "3.9"' don't match your environment
+Collecting cython>=0.29.31
+  Using cached cython-3.1.2-cp38-cp38-win32.whl.metadata (5.8 kB)
+Collecting oldest-supported-numpy>=0.14
+  Using cached oldest_supported_numpy-2023.12.21-py3-none-any.whl.metadata (9.8 kB)
+Collecting setuptools
+  Using cached setuptools-75.3.2-py3-none-any.whl.metadata (6.9 kB)
+Collecting setuptools_scm[toml]
+  Using cached setuptools_scm-8.3.1-py3-none-any.whl.metadata (7.0 kB)
+Collecting numpy==1.17.3 (from oldest-supported-numpy>=0.14)
+  Using cached numpy-1.17.3-cp38-cp38-win32.whl.metadata (2.0 kB)
+Collecting packaging>=20 (from setuptools_scm[toml])
+  Using cached packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting tomli>=1 (from setuptools_scm[toml])
+  Using cached tomli-2.2.1-py3-none-any.whl.metadata (10 kB)
+Collecting typing-extensions (from setuptools_scm[toml])
+  Using cached typing_extensions-4.13.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting importlib-metadata>=4.6 (from setuptools_scm[toml])
+  Using cached importlib_metadata-8.5.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting zipp>=3.20 (from importlib-metadata>=4.6->setuptools_scm[toml])
+  Using cached zipp-3.20.2-py3-none-any.whl.metadata (3.7 kB)
+Using cached cython-3.1.2-cp38-cp38-win32.whl (2.5 MB)
+Using cached oldest_supported_numpy-2023.12.21-py3-none-any.whl (4.9 kB)
+Using cached numpy-1.17.3-cp38-cp38-win32.whl (10.8 MB)
+Using cached setuptools-75.3.2-py3-none-any.whl (1.3 MB)
+Using cached importlib_metadata-8.5.0-py3-none-any.whl (26 kB)
+Using cached packaging-25.0-py3-none-any.whl (66 kB)
+Using cached tomli-2.2.1-py3-none-any.whl (14 kB)
+Using cached setuptools_scm-8.3.1-py3-none-any.whl (43 kB)
+Using cached typing_extensions-4.13.2-py3-none-any.whl (45 kB)
+Using cached zipp-3.20.2-py3-none-any.whl (9.2 kB)
+Installing collected packages: zipp, typing-extensions, tomli, setuptools, packaging, numpy, cython, oldest-supported-numpy, importlib-metadata, setuptools_scm
+Successfully installed cython-3.1.2 importlib-metadata-8.5.0 numpy-1.17.3 oldest-supported-numpy-2023.12.21 packaging-25.0 setuptools-75.3.2 setuptools_scm-8.3.1 tomli-2.2.1 typing-extensions-4.13.2 zipp-3.20.2
