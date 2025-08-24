@@ -1,6 +1,8 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 
 st.title("退休資產需求推估")
 
@@ -115,7 +117,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
         st.line_chart(df)
 
 st.markdown("---")
-
+st.title("定期定額達標時間估算")
 # 定期定額達標時間估算
 with st.expander("定期定額達標所需時間估算", expanded=True):
     asset_options = {
