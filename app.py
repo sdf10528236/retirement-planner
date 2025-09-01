@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
+import math
 
 st.set_page_config(page_title="退休規劃", layout="centered")
 
@@ -96,15 +97,18 @@ strategy_data = {
     "每年固定提領": {"value": "fix"},
 }
 
+retire_need=1200
+
 # 退休後模擬輸入
 with st.expander("退休後資產需求模擬", expanded=True):
-    monthly_expense = st.number_input("退休後每月花費（萬元）", min_value=0, value=4, key="monthly_expense")
+    monthly_expense = st.number_input("退休後預計每月花費（萬元）", min_value=0, value=4, key="monthly_expense")
     years_to_live = st.number_input("退休後預期存活年數", min_value=1, value=35, key="years_to_live")
     portfolio = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio")
     mean_return = portfolio_data[portfolio]["mean_return"]
     std_dev = portfolio_data[portfolio]["std_dev"]
-    mean_return = st.number_input("年平均報酬率（%）", min_value=0.0, max_value=15.0, value=mean_return, key="mean_return")
-    std_dev = st.number_input("年報酬率波動度（標準差%）", min_value=0.0, max_value=30.0, value=std_dev, key="std_dev")
+    # 鎖死數值
+    st.number_input("年平均報酬率（%）", min_value=0.0, max_value=15.0, value=mean_return, key="mean_return", disabled=True)
+    st.number_input("年報酬率波動度（標準差%）", min_value=0.0, max_value=30.0, value=std_dev, key="std_dev", disabled=True)
     inflation = st.number_input("年通膨率（%）", min_value=0.0, max_value=10.0, value=3.0, key="inflation")
     simulations = 10000 #模擬次數
     withdraw_strategy = st.selectbox("提領策略 (提領策略會影響退休所需金額)", options=list(strategy_data.keys()))
@@ -174,6 +178,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
         
     if "retire_result_asset" in st.session_state:
         st.success(f"要達到 {target_success_rate*100:.1f}% 成功率，初始資產至少要：**{st.session_state['retire_result_asset']:,.0f} 萬元**")
+        retire_need=int(math.ceil(st.session_state['retire_result_asset'])) #給定期定額達標時間估算，提領模擬預估表單用
         #percentiles = np.percentile(st.session_state["retire_final_assets"], [25, 50, 75], axis=0)
         years = list(range(1, st.session_state["retire_years_to_live"] + 1))
         # 取出最終資產
@@ -192,7 +197,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
         df = pd.DataFrame(paths, index=years)
 
         # Streamlit 顯示
-        st.subheader("GK 動態提領模擬 - 資產走勢分布 (25%, 50%, 75%)")
+        st.subheader("GK 動態提領模擬 - 資產走勢分布 (25%, 中位數, 75%)")
         st.line_chart(df)
 
         
@@ -202,7 +207,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
 st.markdown("---")
 st.title("我要多久才能退休?")
 
-with st.expander("定期定額達標所需時間估算", expanded=True):
+with st.expander("我要多久才能退休? 定期定額達標所需時間估算", expanded=True):
     asset_options = {
         "VT（全市場 ETF）": 0.08,
         "0050（台灣50）": 0.09,
@@ -210,9 +215,9 @@ with st.expander("定期定額達標所需時間估算", expanded=True):
         "60/40 股債配": 0.065,
     }
 
-    initial_capital = st.number_input("初始本金（萬元）", min_value=0, value=100, key="initial_capital")
-    monthly_invest = st.number_input("每月定期投入金額（萬元）", min_value=0.0, value=2.0, key="monthly_invest")
-    target_asset = st.number_input("目標資產（萬元）", min_value=1, value=1500, key="target_asset")
+    initial_capital = st.number_input("現在能投入的本金?（萬元）", min_value=0, value=100, key="initial_capital")
+    monthly_invest = st.number_input("每月可以定期再投入多少錢?（萬元）", min_value=0.0, value=2.0, key="monthly_invest")
+    target_asset = st.number_input("我預計要多少錢可以退休?（萬元）", min_value=1, value=retire_need, key="target_asset")
     selected_asset = st.selectbox("選擇投資標的", list(asset_options.keys()), key="selected_asset")
     annual_return = asset_options[selected_asset]
     st.markdown(f"📈 **{selected_asset} 長期年化報酬率：{annual_return * 100:.1f}%**")
@@ -239,7 +244,7 @@ with st.expander("定期定額達標所需時間估算", expanded=True):
         if st.session_state["goal_result_years"] is None:
             st.error("在 100 年內無法達成目標資產，請調整參數。")
         else:
-            st.success(f"預估約需 **{st.session_state['goal_result_years']:.1f} 年** 可達成目標資產。")
+            st.success(f"預估約需 **{st.session_state['goal_result_years']:.1f} 年** 可達成退休目標。")
             years_to_plot = min(int(st.session_state["goal_result_years"]) + 1, len(st.session_state["goal_asset_growth"]))
             asset_growth = st.session_state["goal_asset_growth"][:years_to_plot]
             df_growth = pd.DataFrame({
@@ -257,20 +262,21 @@ st.title("我退休後錢會不會花完?")
 # 📌 提領模擬預估
 # ================================
 with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
-    initial_assets = st.number_input("初始資產（萬元）", min_value=100, value=1200, step=100)
+    initial_assets = st.number_input("假設你已經退休了，可以投資的資額有多少?（萬元）", min_value=100, value=retire_need, step=100)
 
     # ✅ 改成輸入「每月提領多少萬」
-    monthly_withdraw = st.number_input("退休後每月提領金額（萬元）", min_value=0.5, value=4.0, step=0.5)
+    monthly_withdraw = st.number_input("退休後預計每月賣股票提領的金額（萬元）", min_value=0.5, value=4.0, step=0.5)
     annual_withdraw = monthly_withdraw * 12   # 轉成年提領金額
     #
     portfolio2 = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio2")
     mean_return2 = portfolio_data[portfolio2]["mean_return"]
     std_dev2 = portfolio_data[portfolio2]["std_dev"]
-    expected_return = st.slider("年平均報酬率（%）", 0.0, 15.0, mean_return2, key="mean_return2") / 100
-    return_std = st.slider("年報酬率波動度（標準差%）", 0.0, 30.0, std_dev2, key="std_dev2")/100
+    # 鎖死數值顯示
+    st.number_input("年平均報酬率（%）", value=mean_return2, disabled=True, key="mean_return2")
+    st.number_input("年報酬率波動度（標準差%）", value=std_dev2, disabled=True, key="std_dev2")
     #
-    inflation = st.number_input("年通膨率 (%)", min_value=0.0, value=3.0) / 100
-    years = st.number_input("退休後活幾年", min_value=1, max_value=100, value=35)
+    inflation = st.number_input("預估年通膨率 (%)", min_value=0.0, value=3.0) / 100
+    years = st.number_input("預估退休後可以活幾年", min_value=1, max_value=100, value=35)
     simulations = 10000 #模擬次數
     withdraw_strategy = st.selectbox("提領策略", options=list(strategy_data.keys()))
 
@@ -350,10 +356,10 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
 
         # 📈 資產走勢圖
         df_assets = pd.DataFrame(paths_assets, index=years_range)
-        st.subheader("📈 資產走勢情境 (25%, 50%, 75%)")
+        st.subheader("📈 資產走勢情境 (25%, 中位數, 75%)")
         st.line_chart(df_assets)
 
         # 💰 提領走勢圖
         df_withdrawals = pd.DataFrame(paths_withdrawals, index=years_range)
-        st.subheader("💰 提領走勢情境 (25%, 50%, 75%)")
+        st.subheader("💰 提領走勢情境 (25%, 中位數, 75%)")
         st.line_chart(df_withdrawals)
