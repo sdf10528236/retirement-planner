@@ -286,11 +286,11 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
     annual_withdraw = monthly_withdraw * 12   # 轉成年提領金額
     #
     portfolio2 = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio2")
-    expected_return = mean_return2 = portfolio_data[portfolio2]["mean_return"]
-    return_std = std_dev2 = portfolio_data[portfolio2]["std_dev"]
+    mean_return2 = portfolio_data[portfolio2]["mean_return"]
+    std_dev2 = portfolio_data[portfolio2]["std_dev"]
     # 鎖死數值顯示
-    st.number_input("年平均報酬率（%）", value=mean_return2, disabled=True, key="mean_return2")
-    st.number_input("年報酬率波動度（標準差%）", value=std_dev2, disabled=True, key="std_dev2")
+    expected_return = st.number_input("年平均報酬率（%）", value=mean_return2, disabled=True, key="mean_return2")/100
+    return_std = st.number_input("年報酬率波動度（標準差%）", value=std_dev2, disabled=True, key="std_dev2")/100
     #
     inflation = st.number_input("預估年通膨率 (%)", min_value=0.0, value=3.0) / 100
     years = st.number_input("預估退休後可以活幾年", min_value=1, max_value=100, value=35)
