@@ -182,7 +182,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
             while high - low > tolerance:
                 mid = (low + high) / 2
                 rate, _ = monte_carlo_sim(mid)
-                if rate >= target_success_rate:
+                if rate > target_success_rate:
                     result_asset = mid
                     high = mid
                 else:
