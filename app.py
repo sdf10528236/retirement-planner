@@ -76,6 +76,10 @@ with st.expander("3️⃣ 繁榮規則（Prosperity Rule）"):
     """)
 
 
+# 在 GK 法則內容之後
+st.markdown("## 🧮 退休試算工具")
+st.markdown("以下三個表單可用來試算不同退休情境。")
+st.markdown("---")
 
 st.title("我要多少錢才能退休?")
 # 投資標的資料
