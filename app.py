@@ -11,10 +11,17 @@ st.title("GK 動態提領策略（Guyton-Klinger Dynamic Withdrawal）")
 st.markdown("""
 GK 動態提領是一種退休金提領策略，根據市場表現和通膨，每年調整提領金額，讓退休金既安全又能維持生活品質。  
 此策略由財務規劃師 **Jonathan Guyton** 與 **William Klinger** 於 2006 年提出。  
+""")
 
-📄 論文連結：
+# 🎬 影片放在論文連結上方
+st.markdown("## 🎬 清流君GK動態提領影片")
+st.video("https://www.youtube.com/watch?v=nNzokVsPyQY&t=887s")
+
+st.markdown("## 📄 論文連結")
+st.markdown("""
 - [Decision Rules and Maximum Initial Withdrawal Rates (PDF)](https://www.financialplanningassociation.org/sites/default/files/2021-10/MAR06%20JFP%20Guyton%20PDF.pdf)
 """)
+
 
 st.markdown("## 📊 GK 三大法則與詳細範例")
 
