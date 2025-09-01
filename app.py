@@ -259,7 +259,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
     return_std = st.slider("年報酬率波動度（標準差%）", 0.0, 30.0, std_dev2, key="std_dev2")/100
     #
     inflation = st.number_input("年通膨率 (%)", min_value=0.0, value=3.0) / 100
-    years = st.number_input("退休後年數", min_value=1, max_value=60, value=35)
+    years = st.number_input("退休後活幾年", min_value=1, max_value=100, value=35)
     simulations = 10000 #模擬次數
     withdraw_strategy = st.selectbox("提領策略", options=list(strategy_data.keys()))
 
