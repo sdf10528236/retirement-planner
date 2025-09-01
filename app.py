@@ -4,8 +4,73 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
-st.title("退休資產需求推估")
+st.set_page_config(page_title="退休規劃", layout="centered")
 
+st.title("GK 動態提領策略（Guyton-Klinger Dynamic Withdrawal）")
+
+st.markdown("""
+GK 動態提領是一種退休金提領策略，根據市場表現和通膨，每年調整提領金額，讓退休金既安全又能維持生活品質。  
+此策略由財務規劃師 **Jonathan Guyton** 與 **William Klinger** 於 2006 年提出。  
+
+📄 論文連結：
+- [Decision Rules and Maximum Initial Withdrawal Rates (PDF)](https://www.financialplanningassociation.org/sites/default/files/2021-10/MAR06%20JFP%20Guyton%20PDF.pdf)
+""")
+
+st.markdown("## 📊 GK 三大法則與詳細範例")
+
+# 通膨規則
+with st.expander("1️⃣ 通膨規則（Inflation Rule）"):
+    st.write("""
+    **原則：** 每年是否調整提領金額，依通膨狀況決定：
+    - 去年退休金有賺錢 → 提領金額隨通膨調整，但上限 6%  
+    - 去年退休金虧損 → 提領金額不隨通膨調整
+
+    **詳細範例：**
+    1. 去年退休金總資產：10,000,000 元  
+    2. 去年投資賺錢，通膨率：3%  
+    3. 假設前一年提領金額為 400,000
+    4. 計算今年提領金額：  
+       今年提領 = 400,000 × (1 + 3%) = 412,000 元  
+    5. 如果去年投資虧損，則今年提領 = 400,000 元（不調整）
+    """)
+
+# 保本規則
+with st.expander("2️⃣ 保本規則（Capital Preservation Rule）"):
+    st.write("""
+    **原則：** 在市場下跌時退休金的總價值會降低，若導致當前提領率比初始提領率超出20%時，就必須把當前提領率下調10%，以免退休金油盡燈枯。
+
+    **詳細範例：**
+    - 初始資產：10,000,000 元  
+    - 初始提領率：4% → 每年提領 400,000 元
+    - 假設市場下跌，資產剩下 7,000,000 元  
+      - 新提領率 = 400,000 ÷ 7,000,000 ≈ 5.71%  
+      - 超過初始提領率 4% 的 20% → 4% × 1.2 = 4.8%  
+      - 5.71% > 4.8%，需下調提領額度 10%  
+      - 調整後提領金額 = 400,000 × (1 - 10%) = 360,000 元
+    - 結果：資產安全，避免提領過高耗盡退休金
+    """)
+
+# 繁榮規則
+with st.expander("3️⃣ 繁榮規則（Prosperity Rule）"):
+    st.write("""
+    **原則：** 在市場上漲退休金變多時，如果導致當前提領率比初始提領率低過20%時，就必須把當前提領率上調10%，以免退休金太多花不完。
+
+    **詳細範例：**
+    - 初始資產：10,000,000 元  
+    - 初始提領率：4% → 每年提領 400,000 元
+    - 通膨率：3%
+    - 假設市場上漲，資產增加到 13,000,000 元  
+      - 通膨調整提領額：400,000 × (1 + 3%) = 412,000 元
+      - 新提領率 = 412,000 ÷ 13,00,000 ≈ 3.17%  
+      - 低於初始提領率 4% 的 20% → 4% × 0.8 = 3.2%  
+      - 3.17% < 3.2%，需上調提領額度 10%  
+      - 調整後提領金額 = 412,000 × (1 + 10%) = 453,200 元
+    - 結果：退休金花得更多，享受人生，同時資產仍安全
+    """)
+
+
+
+st.title("我要多少錢才能退休?")
 # 投資標的資料
 portfolio_data = {
     "VT (全市場 ETF)": {"mean_return": 8.05, "std_dev": 15.76},
@@ -29,10 +94,10 @@ with st.expander("退休後資產需求模擬", expanded=True):
     std_dev = portfolio_data[portfolio]["std_dev"]
     mean_return = st.number_input("年平均報酬率（%）", min_value=0.0, max_value=15.0, value=mean_return, key="mean_return")
     std_dev = st.number_input("年報酬率波動度（標準差%）", min_value=0.0, max_value=30.0, value=std_dev, key="std_dev")
-    inflation = st.number_input("年通膨率（%）", min_value=0.0, max_value=10.0, value=2.0, key="inflation")
-    simulations = st.number_input("模擬次數 (最多2000)", min_value=1, max_value=2000, value=1000, key="simulations")
+    inflation = st.number_input("年通膨率（%）", min_value=0.0, max_value=10.0, value=3.0, key="inflation")
+    simulations = 10000 #模擬次數
     withdraw_strategy = st.selectbox("提領策略 (提領策略會影響退休所需金額)", options=list(strategy_data.keys()))
-    target_success_rate = st.slider("目標成功率(%)", 50, 100, 95, key="target_success_rate") / 100
+    target_success_rate = st.slider("目標成功率(%)", 80, 100, 95, key="target_success_rate") / 100
 
     base_annual_expense = monthly_expense * 12
 
@@ -55,13 +120,11 @@ with st.expander("退休後資產需求模擬", expanded=True):
                 elif strategy_data[withdraw_strategy]["value"] == "GK":
                     asset = asset * (1 + real_return)
                     if asset > last_asset:
-                        if year == 0:
-                            annual_expense=annual_expense
-                        else:
+                        if year != 0:
                             annual_expense *= (1 + inflation/100) 
-                        #在市場上漲退休金變多時，如果導致當前提領率比初始提領率低過20%時，就必須把當前提領率上調10%，以免退休金太多花不完。
-                        if ((annual_expense/asset)-withdraw_rate) < withdraw_rate*(-0.2):
-                            annual_expense=annual_expense*1.1
+                            #在市場上漲退休金變多時，如果導致當前提領率比初始提領率低過20%時，就必須把當前提領率上調10%，以免退休金太多花不完。
+                            if ((annual_expense/asset)-withdraw_rate) < withdraw_rate*(-0.2):
+                                annual_expense=annual_expense*1.1
                     else: 
                         #如果前一年退休金是虧損的，今年的提領金額就不隨通膨進行調整
                         #在市場下跌時退休金的總價值會降低，若導致當前提領率比初始提領率超出20%時，就必須把當前提領率下調10%，以免退休金油盡燈枯。
@@ -81,7 +144,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
 
     if st.button("開始模擬", key="simulate_retire"):
         low, high = 0.0, 1_000_000.0
-        tolerance = 100
+        tolerance = 5
         result_asset = high
         with st.spinner("模擬中，請稍候..."):
             while high - low > tolerance:
@@ -93,32 +156,41 @@ with st.expander("退休後資產需求模擬", expanded=True):
                 else:
                     low = mid
             final_success, final_assets = monte_carlo_sim(result_asset)
-        
+        #print(final_assets)
         st.session_state["retire_result_asset"] = result_asset
         st.session_state["retire_final_assets"] = final_assets
         st.session_state["retire_years_to_live"] = years_to_live
         
     if "retire_result_asset" in st.session_state:
         st.success(f"要達到 {target_success_rate*100:.1f}% 成功率，初始資產至少要：**{st.session_state['retire_result_asset']:,.0f} 萬元**")
-        percentiles = np.percentile(st.session_state["retire_final_assets"], [25, 50, 75], axis=0)
+        #percentiles = np.percentile(st.session_state["retire_final_assets"], [25, 50, 75], axis=0)
         years = list(range(1, st.session_state["retire_years_to_live"] + 1))
-        df = pd.DataFrame({
-            "25%": percentiles[0],
-            "中位數": percentiles[1],
-            "75%": percentiles[2]
-        }, index=years)
-        initial_row = pd.DataFrame({
-            "25%": [st.session_state["retire_result_asset"]],
-            "中位數": [st.session_state["retire_result_asset"]],
-            "75%": [st.session_state["retire_result_asset"]]
-        }, index=[0])
-        df = pd.concat([initial_row, df])
-        st.subheader("退休後資產走勢（含 25%、中位數、75%）")
+        # 取出最終資產
+        final_assets = st.session_state["retire_final_assets"][:, -1]
+
+        # ====== 找出 25%、50%、75% 的完整走勢 ======
+        percentiles = [24,25,26,49,50,51,74,75,76]
+        paths = {}
+
+        for p in percentiles:
+            target_value = np.percentile(final_assets, p)  # 取最終資產的分位數
+            closest_idx = np.argmin(np.abs(final_assets - target_value))  # 找最接近的模擬路徑
+            paths[f"{p}%"] = st.session_state["retire_final_assets"][closest_idx]
+
+        # 建立 DataFrame
+        df = pd.DataFrame(paths, index=years)
+
+        # Streamlit 顯示
+        st.subheader("GK 動態提領模擬 - 資產走勢分布 (25%, 50%, 75%)")
         st.line_chart(df)
 
+        
+
+
+###### 定期定額達標時間估算
 st.markdown("---")
-st.title("定期定額達標時間估算")
-# 定期定額達標時間估算
+st.title("我要多久才能退休?")
+
 with st.expander("定期定額達標所需時間估算", expanded=True):
     asset_options = {
         "VT（全市場 ETF）": 0.08,
@@ -169,13 +241,16 @@ with st.expander("定期定額達標所需時間估算", expanded=True):
 
 #### 提領模擬預估
 
-st.title("退休資產需求推估")
+st.title("我退休後錢會不會花完?")
 # ================================
 # 📌 提領模擬預估
 # ================================
 with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
     initial_assets = st.number_input("初始資產（萬元）", min_value=100, value=1200, step=100)
-    withdraw_rate = st.number_input("提領率 (%)", min_value=1.0,value=4.0) / 100
+
+    # ✅ 改成輸入「每月提領多少萬」
+    monthly_withdraw = st.number_input("退休後每月提領金額（萬元）", min_value=0.5, value=4.0, step=0.5)
+    annual_withdraw = monthly_withdraw * 12   # 轉成年提領金額
     #
     portfolio2 = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio2")
     mean_return2 = portfolio_data[portfolio2]["mean_return"]
@@ -183,13 +258,14 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
     expected_return = st.slider("年平均報酬率（%）", 0.0, 15.0, mean_return2, key="mean_return2") / 100
     return_std = st.slider("年報酬率波動度（標準差%）", 0.0, 30.0, std_dev2, key="std_dev2")/100
     #
-    inflation = st.number_input("年通膨率 (%)", min_value=0.0, value=2.0) / 100
+    inflation = st.number_input("年通膨率 (%)", min_value=0.0, value=3.0) / 100
     years = st.number_input("退休後年數", min_value=1, max_value=60, value=35)
-    simulations = st.number_input("模擬次數", min_value=100, max_value=20000, value=5000)
+    simulations = 10000 #模擬次數
     withdraw_strategy = st.selectbox("提領策略", options=list(strategy_data.keys()))
 
     if st.button("開始模擬", key="withdraw_sim"):
         all_trajectories = []
+        withdraw_trajectories = []
         ending_years = []
         success_count = 0
         final_assets = []
@@ -197,11 +273,12 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
 
         for _ in range(simulations):
             assets = initial_assets
-            withdrawal = initial_assets * withdraw_rate
+            withdrawal = annual_withdraw 
             trajectory = [initial_assets]
+            withdrawal_path = [withdrawal]
             total_withdrawn = 0
             withdraw_count = 0
-            base_withdraw_rate = withdraw_rate
+            base_withdraw_rate = withdrawal / initial_assets  # 用來比較 GK 動態提領
 
             for year in range(years):
                 withdraw_count += 1
@@ -209,24 +286,23 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
 
                 # 投資報酬
                 annual_return = np.random.normal(expected_return, return_std)
-                real_return = (1 + annual_return) - 1
-                last_assets = assets
-                assets = assets * (1 + real_return)
+                assets = assets * (1 + annual_return)
 
                 if strategy_data[withdraw_strategy]["value"] == "fix":
                     withdrawal *= (1 + inflation)
                 elif strategy_data[withdraw_strategy]["value"] == "GK":
-                    if assets > last_assets:  # 市場上漲
+                    if assets > trajectory[-1]:  # 上漲
                         if year != 0:
                             withdrawal *= (1 + inflation)
-                        if ((withdrawal / assets) - base_withdraw_rate) < base_withdraw_rate * (-0.2):
-                            withdrawal *= 1.1
+                            if ((withdrawal / assets) - base_withdraw_rate) < base_withdraw_rate * (-0.2):
+                                withdrawal *= 1.1
                     else:  # 市場下跌
                         if ((withdrawal / assets) - base_withdraw_rate) > base_withdraw_rate * 0.2:
                             withdrawal *= 0.9
 
                 assets -= withdrawal
                 trajectory.append(max(assets, 0))
+                withdrawal_path.append(withdrawal)
 
                 if assets <= 0:
                     ending_years.append(year + 1)
@@ -236,43 +312,37 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
                 success_count += 1
 
             all_trajectories.append(trajectory)
+            withdraw_trajectories.append(withdrawal_path)
             if withdraw_count > 0:
                 avg_withdrawals.append(total_withdrawn / withdraw_count)
 
             final_assets.append(max(trajectory[-1], 0))
 
         success_rate = success_count / simulations * 100
-        avg_years = np.mean(ending_years)
-        max_asset = np.max(final_assets)
-        min_asset = np.min(final_assets)
-        avg_asset = np.mean(final_assets)
         median_asset = np.median(final_assets)
 
         st.success(f"✅ 成功率：{success_rate:.1f}%")
-        st.write(f"📉 平均可撐年數：{avg_years:.1f} 年")
         st.write(f"💰 每年平均提領金額：約 {np.mean(avg_withdrawals):,.0f} 萬元")
-        st.write(f"🏦 最大期末資產：約 {max_asset:,.0f} 萬元")
-        st.write(f"🏦 最小期末資產：約 {min_asset:,.0f} 萬元")
-        st.write(f"🏦 平均期末資產：約 {avg_asset:,.0f} 萬元")
         st.write(f"🏦 中位期末資產：約 {median_asset:,.0f} 萬元")
 
-        # 📊 畫走勢圖
-        fig, ax = plt.subplots(figsize=(10, 5))
-        for traj in all_trajectories[:200]:  # 只畫前200條避免太亂
-            ax.plot(traj, color="blue", alpha=0.2)
-        ax.set_title(f"Retirement Chart \n Successful Rate={success_rate:.1f}%, Average year={avg_years:.1f}year")
-        ax.set_xlabel("Years")
-        ax.set_ylabel("Asset")
-        ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=False))
-        ax.ticklabel_format(style="plain", axis="y")
-        ax.grid(True, alpha=0.3)
-        st.pyplot(fig)
+        # 📊 找出 25%、50%、75% 的完整曲線
+        percentiles = [24,25,26,49,50,51,74,75,76]
+        paths_assets = {}
+        paths_withdrawals = {}
+        for p in percentiles:
+            target_val = np.percentile(final_assets, p)
+            idx = np.argmin(np.abs(np.array(final_assets) - target_val))
+            paths_assets[f"{p}% 資產"] = all_trajectories[idx]
+            paths_withdrawals[f"{p}% 提領"] = withdraw_trajectories[idx]
 
-        # 📊 畫期末資產分布
-        fig2, ax2 = plt.subplots(figsize=(8, 5))
-        ax2.hist(final_assets, bins=50, color="skyblue", edgecolor="black", alpha=0.7)
-        ax2.set_title("End Asset distribution")
-        ax2.set_xlabel("End Asset ")
-        ax2.set_ylabel("num")
-        ax2.ticklabel_format(style="plain", axis="x")
-        st.pyplot(fig2)
+        years_range = list(range(len(max(all_trajectories, key=len))))
+
+        # 📈 資產走勢圖
+        df_assets = pd.DataFrame(paths_assets, index=years_range)
+        st.subheader("📈 資產走勢情境 (25%, 50%, 75%)")
+        st.line_chart(df_assets)
+
+        # 💰 提領走勢圖
+        df_withdrawals = pd.DataFrame(paths_withdrawals, index=years_range)
+        st.subheader("💰 提領走勢情境 (25%, 50%, 75%)")
+        st.line_chart(df_withdrawals)
