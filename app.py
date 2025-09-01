@@ -77,12 +77,17 @@ with st.expander("3️⃣ 繁榮規則（Prosperity Rule）"):
     """)
 
 
+
+
 # 在 GK 法則內容之後
 st.markdown("## 🧮 退休試算工具")
 st.markdown("以下三個表單可用來試算不同退休情境。")
 st.markdown("---")
 
 st.title("我要多少錢才能退休?")
+
+
+
 # 投資標的資料
 portfolio_data = {
     "VT (全市場 ETF)": {"mean_return": 8.05, "std_dev": 15.76},
@@ -106,6 +111,18 @@ with st.expander("退休後資產需求模擬", expanded=True):
     portfolio = st.selectbox("選擇投資標的", options=list(portfolio_data.keys()), key="portfolio")
     mean_return = portfolio_data[portfolio]["mean_return"]
     std_dev = portfolio_data[portfolio]["std_dev"]
+    # VT 說明
+    st.info(
+        """
+        VT 是什麼?
+        **VT (Vanguard Total World Stock ETF)**  
+        - 全球股票 ETF，投資超過 9,000 家公司，涵蓋約 50 個國家。  
+        - 以市值加權方式投資大型、中型及小型公司（市值型 ETF）。  
+        - 高度分散風險，適合長期退休投資。  
+        - 慢活夫妻介紹影片:(https://www.youtube.com/watch?v=_vcMqpM24OM)
+        - 官方資訊請參考：[Vanguard VT ETF 官方網站](https://investor.vanguard.com/etf/profile/VT)
+        """
+    )
     # 鎖死數值
     st.number_input("年平均報酬率（%）", min_value=0.0, max_value=15.0, value=mean_return, key="mean_return", disabled=True)
     st.number_input("年報酬率波動度（標準差%）", min_value=0.0, max_value=30.0, value=std_dev, key="std_dev", disabled=True)
@@ -209,7 +226,7 @@ st.title("我要多久才能退休?")
 
 with st.expander("我要多久才能退休? 定期定額達標所需時間估算", expanded=True):
     asset_options = {
-        "VT（全市場 ETF）": 0.08,
+        "VT（全市場 ETF）": 0.0805,
         "0050（台灣50）": 0.09,
         "SPY（S&P 500）": 0.105,
         "60/40 股債配": 0.065,
@@ -220,7 +237,7 @@ with st.expander("我要多久才能退休? 定期定額達標所需時間估算
     target_asset = st.number_input("我預計要多少錢可以退休?（萬元）", min_value=1, value=retire_need, key="target_asset")
     selected_asset = st.selectbox("選擇投資標的", list(asset_options.keys()), key="selected_asset")
     annual_return = asset_options[selected_asset]
-    st.markdown(f"📈 **{selected_asset} 長期年化報酬率：{annual_return * 100:.1f}%**")
+    st.markdown(f"📈 **{selected_asset} 長期年化報酬率：{annual_return * 100:.2f}%**")
 
     def calculate_years_to_goal(initial_asset, monthly_invest, annual_return, target):
         r = annual_return / 12
