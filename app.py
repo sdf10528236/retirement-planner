@@ -202,7 +202,7 @@ with st.expander("退休後資產需求模擬", expanded=True):
         final_assets = st.session_state["retire_final_assets"][:, -1]
 
         # ====== 找出 25%、50%、75% 的完整走勢 ======
-        percentiles = [24,25,26,49,50,51,74,75,76]
+        percentiles = [25,50,75]
         paths = {}
 
         for p in percentiles:
@@ -360,7 +360,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         st.write(f"🏦 中位期末資產：約 {median_asset:,.0f} 萬元")
 
         # 📊 找出 25%、50%、75% 的完整曲線
-        percentiles = [24,25,26,49,50,51,74,75,76]
+        percentiles = [25,50,75]
         paths_assets = {}
         paths_withdrawals = {}
         for p in percentiles:
