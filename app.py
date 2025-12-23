@@ -338,7 +338,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
                 assets -= withdrawal
                 trajectory.append(max(assets, 0))
                 withdrawal_path.append(withdrawal)
-                assets= assets*(1-0.0075)  #每年手續費0.75%
+                #assets= assets * (1 - 0.0075)  #每年手續費0.75%
                 if assets <= 0:
                     ending_years.append(year + 1)
                     break
