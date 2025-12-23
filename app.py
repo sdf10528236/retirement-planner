@@ -306,14 +306,15 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         avg_withdrawals = []
         total_withdrawn_list = []
         for _ in range(simulations):
-            assets = initial_assets
+            
             withdrawal = annual_withdraw 
-            trajectory = [initial_assets]
             withdrawal_path = [withdrawal]
-            total_withdrawn = 0
-            withdraw_count = 0
+            total_withdrawn = 1  #第一年先提領
+            withdraw_count = 1  #第一年先提領
+            initial_assets = initial_assets - withdrawal # 第一年先提領
             base_withdraw_rate = withdrawal / initial_assets  # 用來比較 GK 動態提領
-
+            trajectory = [initial_assets]
+            assets = initial_assets
             for year in range(years):
                 withdraw_count += 1
                 total_withdrawn += withdrawal
@@ -321,7 +322,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
                 # 投資報酬
                 annual_return = np.random.normal(expected_return, return_std)
                 assets = assets * (1 + annual_return)
-
+                
                 if strategy_data[withdraw_strategy]["value"] == "fix":
                     withdrawal *= (1 + inflation)
                 elif strategy_data[withdraw_strategy]["value"] == "GK":
@@ -337,7 +338,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
                 assets -= withdrawal
                 trajectory.append(max(assets, 0))
                 withdrawal_path.append(withdrawal)
-
+                assets= assets*(1-0.0075)  #每年手續費0.75%
                 if assets <= 0:
                     ending_years.append(year + 1)
                     break
