@@ -294,7 +294,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
     #
     inflation = st.number_input("預估年通膨率 (%)", min_value=0.0, value=3.0) / 100
     years = st.number_input("預估退休後可以活幾年", min_value=1, max_value=100, value=35)
-    simulations = 100000 #模擬次數
+    simulations = 50000 #模擬次數
     withdraw_strategy = st.selectbox("提領策略", options=list(strategy_data.keys()))
 
     if st.button("開始模擬", key="withdraw_sim"):
@@ -337,7 +337,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
                 assets -= withdrawal
                 trajectory.append(max(assets, 0))
                 withdrawal_path.append(withdrawal)
-                #assets= assets * (1 - 0.0075)  #每年手續費0.75%
+                assets= assets * (1 - 0.0075)  #每年手續費0.75%
                 if assets <= 0:
                     ending_years.append(year + 1)
                     break
