@@ -356,6 +356,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         median_asset = np.median(final_assets)
 
         total_withdrawn_25 = np.percentile(total_withdrawn_list, 25)
+        total_withdrawn_35 = np.percentile(total_withdrawn_list, 35)
         total_withdrawn_50 = np.percentile(total_withdrawn_list, 50)
         total_withdrawn_75 = np.percentile(total_withdrawn_list, 75)
 
@@ -364,7 +365,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         st.write(f"🏦 中位期末資產：約 {median_asset:,.0f} 萬元")
 
         # 📊 找出 25%、50%、75% 的完整曲線
-        percentiles = [25,50,75]
+        percentiles = [25,35,50,75]
         paths_assets = {}
         paths_withdrawals = {}
         for p in percentiles:
@@ -388,5 +389,6 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         st.markdown("### 📊 退休期間「累計提領總金額」")
 
         st.write(f"🔴 25% 悲觀情境：約 **{total_withdrawn_25:,.0f} 萬元**")
+        st.write(f"🔴 35% 悲觀情境：約 **{total_withdrawn_35:,.0f} 萬元**")
         st.write(f"🟡 50% 中位數情境：約 **{total_withdrawn_50:,.0f} 萬元**")
         st.write(f"🟢 75% 樂觀情境：約 **{total_withdrawn_75:,.0f} 萬元**")
