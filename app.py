@@ -304,7 +304,7 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         success_count = 0
         final_assets = []
         avg_withdrawals = []
-
+        total_withdrawn_list = []
         for _ in range(simulations):
             assets = initial_assets
             withdrawal = annual_withdraw 
@@ -351,9 +351,13 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
                 avg_withdrawals.append(total_withdrawn / withdraw_count)
 
             final_assets.append(max(trajectory[-1], 0))
-
+            total_withdrawn_list.append(total_withdrawn)
         success_rate = success_count / simulations * 100
         median_asset = np.median(final_assets)
+
+        total_withdrawn_25 = np.percentile(total_withdrawn_list, 25)
+        total_withdrawn_50 = np.percentile(total_withdrawn_list, 50)
+        total_withdrawn_75 = np.percentile(total_withdrawn_list, 75)
 
         st.success(f"✅ 成功率：{success_rate:.1f}%")
         st.write(f"💰 每年平均提領金額：約 {np.mean(avg_withdrawals):,.0f} 萬元")
@@ -380,3 +384,9 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
         df_withdrawals = pd.DataFrame(paths_withdrawals, index=years_range)
         st.subheader("💰 提領走勢情境 (25%, 中位數, 75%)")
         st.line_chart(df_withdrawals)
+
+        st.markdown("### 📊 退休期間「累計提領總金額」")
+
+        st.write(f"🔴 25% 悲觀情境：約 **{total_withdrawn_25:,.0f} 萬元**")
+        st.write(f"🟡 50% 中位數情境：約 **{total_withdrawn_50:,.0f} 萬元**")
+        st.write(f"🟢 75% 樂觀情境：約 **{total_withdrawn_75:,.0f} 萬元**")
