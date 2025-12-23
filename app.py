@@ -311,10 +311,9 @@ with st.expander("提領模擬預估 (蒙地卡羅)", expanded=True):
             withdrawal_path = [withdrawal]
             total_withdrawn = 0  
             withdraw_count = 1  #第一年先提領
-            initial_assets = initial_assets - withdrawal # 第一年先提領
             base_withdraw_rate = withdrawal / initial_assets  # 用來比較 GK 動態提領
             trajectory = [initial_assets]
-            assets = initial_assets
+            assets = initial_assets- withdrawal # 第一年先提領
             for year in range(years):
                 withdraw_count += 1
                 total_withdrawn += withdrawal
